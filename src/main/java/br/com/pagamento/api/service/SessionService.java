@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class SessionService<T> {
-	
+
 	@Autowired
 	private HttpSession session;
 	@Autowired
@@ -19,13 +19,13 @@ public class SessionService<T> {
 			request.getSession().setAttribute(name, objeto);
 		}
 	}
-	
+
 	public T getSession(String name) {
 		return (T) session.getAttribute(name);
 	}
-	
+
 	public void clearSession() {
 		request.getSession().invalidate();
-}
+	}
 
 }

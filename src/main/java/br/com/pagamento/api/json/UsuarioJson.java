@@ -3,17 +3,18 @@ package br.com.pagamento.api.json;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -43,7 +44,6 @@ public class UsuarioJson {
 
 	@Autowired
 	private RoleService roleService;
-
 	
 	@PostMapping(value = "/login")
 	@ApiOperation(value="Usuario faz login")
@@ -112,19 +112,23 @@ public class UsuarioJson {
 		return ResponseEntity.status(400).build();
 	}
 
-	/*@PutMapping(value = "/{id}", produces = "application/json")
-	public ResponseEntity<User> update(User user, @PathVariable Long id) {
-		user = serviceUsuario.findById(id);
-		if (user != null) {
-			String senha = user.getSenha();
+	@PutMapping(value = "/updateUser/{id}")
+	public ResponseEntity<User> update(
+			@RequestParam("nome") String nome,
+			@RequestParam("senha") String senha,
+ 			@RequestParam("email") String email, @PathVariable("id") Long id) {
+		User user = serviceUsuario.findById(id);
+		if (user != null && (!email.trim().isEmpty() && !nome.trim().isEmpty() && !senha.trim().isEmpty())) {
+			user.setEmail(email);
+			user.setNome(nome);
 			user.setSenha(new BCryptPasswordEncoder().encode(senha));
 			serviceUsuario.editar(user);
 			return ResponseEntity.ok(user);
 		}
-		return ResponseEntity.noContent().build();
-	}*/
+		return ResponseEntity.status(400).build();
+	}
 
-	@PostMapping(value = "/save", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@PostMapping(value = "/save")
 	@ApiOperation(value="Criando um novo usuário")
 	public ResponseEntity<User> salvarNovo(@RequestParam("nome") String nome, @RequestParam("email") String email,
 			@RequestParam("senha") String senha) {

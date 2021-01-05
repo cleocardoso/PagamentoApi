@@ -2,7 +2,6 @@ package br.com.pagamento.api.model;
 
 import java.io.Serializable;
 
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -13,36 +12,35 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-
-@JsonIgnoreProperties({"hibernateLazyInitializer","handler"})
+@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 @Entity
 @Table(name = "cartao")
 public class Cartao implements Serializable {
 
-	private static final long serialVersionUID = 1L; 	
-	
-	@Id   
+	private static final long serialVersionUID = 1L;
+
+	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id_cartao;
 	private String nome;
 	private String numero;
 	@Column(length = 3)
 	private String cvv;
-	
+
 	private int qtd_parcelas;
-	
+
 	private double valor_parcelado;
 
 	private int mes;
-	
+
 	private int ano;
-		
+
 	@ManyToOne
 	@JoinColumn(name = "id_compra")
 	private Pagamento compras;
-	
-	public Cartao(Long id_cartao, String nome, String numero, String cvv, int qtd_parcelas, double valor_parcelado, int mes,
-			int ano, Pagamento compras) {
+
+	public Cartao(Long id_cartao, String nome, String numero, String cvv, int qtd_parcelas, double valor_parcelado,
+			int mes, int ano, Pagamento compras) {
 		super();
 		this.id_cartao = id_cartao;
 		this.nome = nome;
@@ -53,7 +51,7 @@ public class Cartao implements Serializable {
 		this.mes = mes;
 		this.ano = ano;
 		this.compras = compras;
-		
+
 	}
 
 	public int getMes() {
@@ -143,10 +141,8 @@ public class Cartao implements Serializable {
 	@Override
 	public String toString() {
 		return "Cartao [id_cartao=" + id_cartao + ", nome=" + nome + ", numero=" + numero + ", cvv=" + cvv
-				+ ", qtd_parcelas=" + qtd_parcelas + ", valor_parcelado=" + valor_parcelado 
-				+ ", mes=" + mes + ", ano=" + ano + ", compras=" + compras + "]";
+				+ ", qtd_parcelas=" + qtd_parcelas + ", valor_parcelado=" + valor_parcelado + ", mes=" + mes + ", ano="
+				+ ano + ", compras=" + compras + "]";
 	}
 
-	
-		
 }
