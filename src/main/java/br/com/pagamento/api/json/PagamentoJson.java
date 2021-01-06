@@ -83,39 +83,50 @@ public class PagamentoJson {
 	@Autowired
 	private LogRegisterService logService;
 
-	
+	/*
+	 * vcs precisam criar um metodo que retorne o pagamento salvo no metodo
+	 * saveAndGerarLink pelo token. Esse pagamento retornado, será util para
+	 * vincular o mesmo ao tipo de pagamento (cartao e boleto). Igual como antes
+	 * enviar para salvar o cartao enviava o id do pagamento
+	 */
+	/*
+	 * Antes disso, vcs precisam seguir esses passos. 1 - criar uma consulta do jpa
+	 * no repositorio do pagamento 2 - criar um metodo que receba a consulta do
+	 * primeiro passo.
+	 */
+
 	@GetMapping("/pagamento/{token}")
 	@ApiOperation(value = "Retorna Pagamento")
 	public ResponseEntity<Pagamento> pagamento(@PathVariable("token") String token,
 			@RequestHeader(value = "Authorization", required = false) String Authorization) {
-		//System.out.println(Authorization);
-		//try {
-			System.out.println(token);
+		// System.out.println(Authorization);
+		// try {
+		System.out.println(token);
 
-			//boolean isValid = jwtComponent.isTokenExpired(Authorization.substring(7));
-			//if (!isValid) {
-				Pagamento compras = compraService.findByPagamento(token);
+		// boolean isValid = jwtComponent.isTokenExpired(Authorization.substring(7));
+		// if (!isValid) {
+		Pagamento compras = compraService.findByPagamento(token);
 
-				if (compras != null) {
-					return ResponseEntity.ok(compras);
-				}
-				return ResponseEntity.notFound().build();
-			//}
-		//} catch (ExpiredJwtException | SignatureException e) {
-		//	return ResponseEntity.status(403).build();
-		//} catch (EntityNotFoundException e) {
-		//	return ResponseEntity.status(404).build();
-		//}
-		//return ResponseEntity.status(400).build();
+		if (compras != null) {
+			return ResponseEntity.ok(compras);
+		}
+		return ResponseEntity.notFound().build();
+		// }
+		// } catch (ExpiredJwtException | SignatureException e) {
+		// return ResponseEntity.status(403).build();
+		// } catch (EntityNotFoundException e) {
+		// return ResponseEntity.status(404).build();
+		// }
+		// return ResponseEntity.status(400).build();
 	}
-	
-	
-	
-	
+
 	@PostMapping("/gerarLink")
 	public ResponseEntity<?> saveAndGerarLink(@RequestParam("valor") Double valor, @RequestParam("data") String data,
-			@RequestParam("id") Long id, @RequestHeader(required = true, value = "Origin") String origin) {
-		
+			@RequestParam("id") Long id, @RequestHeader(required = true, value = "Origem") String origin) {
+		/*
+		 * Esse metodo vai ser util para salvar a instancia do pagamento e depois ser
+		 * usado para vincular o tipo de pagamento (boleto ou cartao)
+		 */
 
 		User user = serviceUsuario.findById(id); // verifica se existe na base de dados o usuario com o id
 		if (user != null) { // se ele for diferente de null, é pq existe
@@ -123,14 +134,9 @@ public class PagamentoJson {
 			pagamento.setValor(valor); // seta o valor
 			pagamento.setUsuario(user); // seta o usuario
 			pagamento.setToken(jwtComponent.generateToken(user)); // seta o token para ser usado para o link
+			pagamento.setOrigin(origin);
 			compraService.salvarCompra(pagamento);// salva o pagamento
 			Link link = new Link(pagamento.getToken()); // cria um objeto link, e informa o token
-			LogRegister logRegister = new LogRegister(); // cria o log register para setar o host de origem
-			logRegister.setDate(new Date()); // seta a data
-			logRegister.setHostOrigin(origin); // seta o host origin
-			logRegister.setCompra(pagamento); // seta o pagamento
-			logService.save(logRegister);
-
 			return ResponseEntity.ok(link); // retorna um objeto que contem o link
 		} // se o usuario é nulo, retorna 404
 		return ResponseEntity.notFound().build();
@@ -175,23 +181,28 @@ public class PagamentoJson {
 	@ApiOperation(value = "Retorna os Pagamentos pelo id do usuario")
 	public ResponseEntity<Pagamento> detalhePorId(@PathVariable("id") Long id,
 			@RequestHeader(value = "Authorization", required = false) String Authorization) {
-		System.out.println(Authorization);
+		//System.out.println(Authorization);
 		try {
 			System.out.println(id);
 
-			boolean isValid = jwtComponent.isTokenExpired(Authorization.substring(7));
-			if (!isValid) {
+			//boolean isValid = jwtComponent.isTokenExpired(Authorization.substring(7));
+			//if (!isValid) {
 				Pagamento compras = compraService.findByIdCompra(id);
 
 				if (compras != null) {
 					return ResponseEntity.ok(compras);
 				}
 				return ResponseEntity.notFound().build();
-			}
+			//}
 		} catch (ExpiredJwtException | SignatureException e) {
 			return ResponseEntity.status(403).build();
 		}
-		return ResponseEntity.status(400).build();
+		//return ResponseEntity.status(400).build();
+	}
+	
+	@GetMapping("/detalhesCompraIdCartao/{id_cartao}")
+	public ResponseEntity<List<Pagamento>> detalhesCompraCartao(@PathVariable("id_cartao") Long id_cartao){
+		return ResponseEntity.ok(compraService.findByIdcartao(id_cartao));
 	}
 
 	@GetMapping("/detalhes/{email}")
@@ -284,28 +295,27 @@ public class PagamentoJson {
 						}
 					} else if (pagamento.getTipoPagamento().equals(TipoPagamento.CARTAO)) {
 						if (pagamento.getCartao() != null) {// verifica se existe o cartao na requisição
-
+							double valor = pagamento.getQuantidade() > 0 ? pagamento.getValor() * pagamento.getQuantidade() : pagamento.getValor();
 							Cartao cartao = pagamento.getCartao();
-							cartao.setValor_parcelado(calPMT(pagamento.getValor() * pagamento.getQuantidade(),
+							cartao.setValor_parcelado(calPMT(valor,
 									cartao.getQtd_parcelas(), "2%"));
-							// cartao.setValor_parcelado(cartao.getValor_parcelado());
 							pagamento.setStatus(Status.CONCLUÍDA);
 							cartaoService.salvarCartao(cartao);
+							pagamento.setCartao(cartao);
 						} else {// se não existe deve informar
 							return ResponseEntity.status(400).build();
 						}
 					}
 					// caso existe o boleto ou cartão.
 					pagamento.setDataCompra(new Date());
-					pagamento.setValor(pagamento.getValor() * pagamento.getQuantidade());
+					if(pagamento.getQuantidade() > 0) {
+						pagamento.setValor(pagamento.getValor() * pagamento.getQuantidade());
+					}else {
+						pagamento.setValor(pagamento.getValor());
+					}
 					pagamento.setUsuario(user);
+					pagamento.setOrigin(pagamento.getOrigin());
 					compraService.salvarCompra(pagamento);
-					LogRegister logRegister = new LogRegister();
-					// logRegister.setHostOrigin(origin);
-					logRegister.setDate(new Date());
-					logRegister.setCompra(pagamento);// aqui relacionamento
-					logService.save(logRegister);
-
 					return new ResponseEntity<Pagamento>(pagamento, HttpStatus.CREATED);
 				}
 			}

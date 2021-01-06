@@ -58,11 +58,13 @@ public class Pagamento implements Serializable {
 	// @JsonIgnore
 	public User usuario;
 
-	@OneToOne(mappedBy = "compra")
+	@OneToOne(mappedBy = "compra", fetch = FetchType.LAZY)
 	@JsonIgnore
 	private LogRegister logRegister;
 
 	private String token;
+
+	private String origin;
 
 	public Pagamento() {
 		super();
@@ -176,6 +178,18 @@ public class Pagamento implements Serializable {
 
 	public void setToken(String token) {
 		this.token = token;
+	}
+
+	public String getOrigin() {
+		return origin;
+	}
+
+	public void setOrigin(String origin) {
+		this.origin = origin;
+	}
+
+	public static long getSerialversionuid() {
+		return serialVersionUID;
 	}
 
 }
