@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.com.pagamento.api.enums.Status;
@@ -51,6 +52,14 @@ class TestCartao { // Classe Auxiliar
 	public Long idCompra;
 }
 
+class Link {
+	public String link;
+
+	public Link(String token) {
+		this.link = "http://localhost:8080/compras/comprar/" + token;
+	}
+}
+
 @RestController
 @RequestMapping("/api/compras")
 @Api(value = "API REST Pagamento")
@@ -73,6 +82,42 @@ public class PagamentoJson {
 
 	@Autowired
 	private LogRegisterService logService;
+
+	/*
+	 * vcs precisam criar um metodo que retorne o pagamento salvo no metodo
+	 * saveAndGerarLink pelo token. Esse pagamento retornado, será util para vincular
+	 * o mesmo ao tipo de pagamento (cartao e boleto). Igual como antes enviar para salvar o cartao enviava o id do pagamento
+	 */
+	/*Antes disso, vcs precisam seguir esses passos.
+	 * 1 - criar uma consulta do jpa no repositorio do pagamento
+	 * 2 - criar um metodo que receba a consulta do primeiro passo.
+	 * */
+
+	@PostMapping("/gerarLink")
+	public ResponseEntity<?> saveAndGerarLink(@RequestParam("valor") Double valor, @RequestParam("data") String data,
+			@RequestParam("id") Long id, @RequestHeader(required = true, value = "Origin") String origin) {
+		/*
+		 * Esse metodo vai ser util para salvar a instancia do pagamento e depois ser
+		 * usado para vincular o tipo de pagamento (boleto ou cartao)
+		 */
+
+		User user = serviceUsuario.findById(id); // verifica se existe na base de dados o usuario com o id
+		if (user != null) { // se ele for diferente de null, é pq existe
+			Pagamento pagamento = new Pagamento(); // cria um pagamento
+			pagamento.setValor(valor); // seta o valor
+			pagamento.setUsuario(user); // seta o usuario
+			pagamento.setToken(jwtComponent.generateToken(user)); // seta o token para ser usado para o link
+			compraService.salvarCompra(pagamento);// salva o pagamento
+			Link link = new Link(pagamento.getToken()); // cria um objeto link, e informa o token
+			LogRegister logRegister = new LogRegister(); // cria o log register para setar o host de origem
+			logRegister.setDate(new Date()); // seta a data
+			logRegister.setHostOrigin(origin); // seta o host origin
+			logRegister.setCompra(pagamento); // seta o pagamento
+
+			return ResponseEntity.ok(link); // retorna um objeto que contem o link
+		} // se o usuario é nulo, retorna 404
+		return ResponseEntity.notFound().build();
+	}
 
 	@PostMapping("/saveBoleto")
 	public ResponseEntity<Boleto> salvarBoleto(HttpServletRequest request, @RequestBody TestBoleto test) {

@@ -21,52 +21,51 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import br.com.pagamento.api.enums.Status;
 import br.com.pagamento.api.enums.TipoPagamento;
 
-@JsonIgnoreProperties({"hibernateLazyInitializer","handler"})
+@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 @Entity
 @Table(name = "compras")
-public class Pagamento implements Serializable{
-	
-    
-	
+public class Pagamento implements Serializable {
+
 	private static final long serialVersionUID = 1L;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
-	private Long idCompra;	
+	private Long idCompra;
 
-	
 	@ManyToOne
 	@JoinColumn(name = "id_Cartao")
 	private Cartao cartao;
-	
+
 	@ManyToOne
 	@JoinColumn(name = "id_Boleto")
 	private Boleto boleto;
-	
+
 	private double valor;
-	
+
 	private int quantidade;
-	
+
 	@JsonFormat(pattern = "dd/MM/yyyy")
 	@Temporal(TemporalType.DATE)
 	private Date dataCompra;
-	
+
 	private TipoPagamento tipoPagamento;
-	
+
 	private Status status;
-	
+
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "usuario_id")
-	//@JsonIgnore
+	// @JsonIgnore
 	public User usuario;
-	
-	@OneToOne(mappedBy="compra")
+
+	@OneToOne(mappedBy = "compra")
 	private LogRegister logRegister;
-    
+
+	private String token;
+
 	public Pagamento() {
-		super();		
-	}	
-	
+		super();
+	}
+
 	public Pagamento(Long idCompra, Cartao cartao, Boleto boleto, double valor, int quantidade, Date dataCompra,
 			TipoPagamento tipoPagamento, Status status, User usuario) {
 		super();
@@ -81,7 +80,7 @@ public class Pagamento implements Serializable{
 		this.usuario = usuario;
 	}
 
-    public double getValor() {
+	public double getValor() {
 		return valor;
 	}
 
@@ -98,12 +97,12 @@ public class Pagamento implements Serializable{
 	}
 
 	public Long getId() {
-		return idCompra ;
+		return idCompra;
 	}
 
-	public void setId(Long idCompra ) {
-		this.idCompra  = idCompra ;
-	}	
+	public void setId(Long idCompra) {
+		this.idCompra = idCompra;
+	}
 
 	public Long getIdCompra() {
 		return idCompra;
@@ -136,15 +135,19 @@ public class Pagamento implements Serializable{
 	public void setTipoPagamento(TipoPagamento tipoPagamento) {
 		this.tipoPagamento = tipoPagamento;
 	}
+
 	public User getUsuario() {
 		return usuario;
 	}
+
 	public void setUsuario(User usuario) {
 		this.usuario = usuario;
 	}
+
 	public Date getDataCompra() {
 		return dataCompra;
 	}
+
 	public void setDataCompra(Date dataCompra) {
 		this.dataCompra = dataCompra;
 	}
@@ -155,7 +158,22 @@ public class Pagamento implements Serializable{
 
 	public void setStatus(Status status) {
 		this.status = status;
-	}	
-	
-				
+	}
+
+	public LogRegister getLogRegister() {
+		return logRegister;
+	}
+
+	public void setLogRegister(LogRegister logRegister) {
+		this.logRegister = logRegister;
+	}
+
+	public String getToken() {
+		return token;
+	}
+
+	public void setToken(String token) {
+		this.token = token;
+	}
+
 }
