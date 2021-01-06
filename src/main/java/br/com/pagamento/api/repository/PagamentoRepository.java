@@ -28,5 +28,9 @@ public interface PagamentoRepository extends JpaRepository<Pagamento, Long> {
 	@Query(value = "select * from compras c\n" + "inner join usuario u on(c.usuario_id = u.id)\n"
 			+ "where u.email = :email", nativeQuery = true)
 	public List<Pagamento> findByEmail(@Param("email") String email);
+	
+	@Query(value = "select * from compras c\n"
+			+ "where c.token = :token", nativeQuery = true)
+	public Pagamento findByPagamento(@Param("token") String token);
 
 }

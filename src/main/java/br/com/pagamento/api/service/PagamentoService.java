@@ -37,7 +37,9 @@ public class PagamentoService {
 	public List<Pagamento> findByIdcartao(Long id_cartao){
 		return repository.findByIdCartao(id_cartao);
 	}
-	
+	public Pagamento findByPagamento(String token){
+		return repository.findByPagamento(token);
+	}
 	
 	
 }
