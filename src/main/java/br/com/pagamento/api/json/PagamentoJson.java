@@ -88,25 +88,25 @@ public class PagamentoJson {
 	@ApiOperation(value = "Retorna Pagamento")
 	public ResponseEntity<Pagamento> pagamento(@PathVariable("token") String token,
 			@RequestHeader(value = "Authorization", required = false) String Authorization) {
-		System.out.println(Authorization);
-		try {
+		//System.out.println(Authorization);
+		//try {
 			System.out.println(token);
 
-			boolean isValid = jwtComponent.isTokenExpired(Authorization.substring(7));
-			if (!isValid) {
+			//boolean isValid = jwtComponent.isTokenExpired(Authorization.substring(7));
+			//if (!isValid) {
 				Pagamento compras = compraService.findByPagamento(token);
 
 				if (compras != null) {
 					return ResponseEntity.ok(compras);
 				}
 				return ResponseEntity.notFound().build();
-			}
-		} catch (ExpiredJwtException | SignatureException e) {
-			return ResponseEntity.status(403).build();
-		} catch (EntityNotFoundException e) {
-			return ResponseEntity.status(404).build();
-		}
-		return ResponseEntity.status(400).build();
+			//}
+		//} catch (ExpiredJwtException | SignatureException e) {
+		//	return ResponseEntity.status(403).build();
+		//} catch (EntityNotFoundException e) {
+		//	return ResponseEntity.status(404).build();
+		//}
+		//return ResponseEntity.status(400).build();
 	}
 	
 	

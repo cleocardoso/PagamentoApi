@@ -16,6 +16,7 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import br.com.pagamento.api.enums.Status;
@@ -58,6 +59,7 @@ public class Pagamento implements Serializable {
 	public User usuario;
 
 	@OneToOne(mappedBy = "compra")
+	@JsonIgnore
 	private LogRegister logRegister;
 
 	private String token;
