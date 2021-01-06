@@ -84,7 +84,7 @@ public class PagamentoJson {
 	private LogRegisterService logService;
 
 	
-	@GetMapping("/pagamento")
+	@GetMapping("/pagamento/{token}")
 	@ApiOperation(value = "Retorna Pagamento")
 	public ResponseEntity<Pagamento> pagamento(@PathVariable("token") String token,
 			@RequestHeader(value = "Authorization", required = false) String Authorization) {
