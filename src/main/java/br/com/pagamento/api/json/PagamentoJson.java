@@ -129,6 +129,7 @@ public class PagamentoJson {
 			logRegister.setDate(new Date()); // seta a data
 			logRegister.setHostOrigin(origin); // seta o host origin
 			logRegister.setCompra(pagamento); // seta o pagamento
+			logService.save(logRegister);
 
 			return ResponseEntity.ok(link); // retorna um objeto que contem o link
 		} // se o usuario é nulo, retorna 404
