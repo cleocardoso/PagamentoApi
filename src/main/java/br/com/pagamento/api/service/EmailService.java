@@ -29,7 +29,7 @@ public class EmailService {
 			SimpleMailMessage message = new SimpleMailMessage();
 			message.setTo(email.getTo());
 			message.setSubject(email.getSubject());
-			message.setText("Nova senha: " + novaSenha);
+			message.setText("Bem vindo ao sistema de Pagamento "+usuario.getNome()+"\n Sua nova senha: " + novaSenha);
 			message.setFrom(email.getFrom());
 			
 		    mailSender.send(message);

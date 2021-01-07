@@ -1,6 +1,8 @@
 package br.com.pagamento.api.json;
 
 
+import java.util.Random;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,8 +21,12 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.ModelAndView;
+
+import br.com.pagamento.api.service.EmailService;
 
 import br.com.pagamento.api.jwt.JwtComponent;
+import br.com.pagamento.api.model.Email;
 import br.com.pagamento.api.model.Role;
 import br.com.pagamento.api.model.User;
 import br.com.pagamento.api.service.RoleService;
@@ -41,6 +47,12 @@ public class UsuarioJson {
 	private AuthenticationManager authenticationManager;
 	@Autowired
 	private UserService serviceUsuario;
+	
+	@Autowired
+	private UserService service;
+	
+	@Autowired
+	private EmailService sendEmail;
 
 	@Autowired
 	private RoleService roleService;
@@ -128,6 +140,37 @@ public class UsuarioJson {
 		return ResponseEntity.status(400).build();
 	}
 	
+	@PostMapping(value = "/trocarSenha")
+	@ApiOperation(value="Enviar senha para email")
+	public ResponseEntity <User> trocarSenha(@RequestParam("email") String email) {
+	//
+
+		
+		User user2 = serviceUsuario.getEmail(email);
+		ModelAndView view = new ModelAndView("login");
+		if(user2 == null) {
+			
+				view.addObject("error", "Email não está cadastrado no sistema!");
+				return ResponseEntity.status(404).build();
+		}else {
+			Random r = new Random();
+			String novaSenhaGerada = String.valueOf(Math.abs(r.nextInt()));
+			System.out.println(novaSenhaGerada);
+			user2.setSenha(novaSenhaGerada);			
+			user2.setSenha(new BCryptPasswordEncoder().encode(novaSenhaGerada));			
+			serviceUsuario.salvar(user2);
+			Email email2 = new Email();
+			email2.setTo(user2.getEmail());
+			sendEmail.sendNovaSenhaEmail(email2, novaSenhaGerada);
+			view.addObject("mensagem", "Nova senha gerada!!!");
+			
+			
+		}
+		return ResponseEntity.ok(user2);
+		//return ResponseEntity.status(400).build();
+		//return view;
+	}
+	
 	@GetMapping("/tokenPagamento/{token}")
 	public ResponseEntity<User> tokenPagamento(@PathVariable("token") String token){
 		return ResponseEntity.ok(serviceUsuario.tokenPagamento(token));
@@ -151,5 +194,6 @@ public class UsuarioJson {
 
 		return new ResponseEntity<User>(user, HttpStatus.CREATED);
 	}
+	
 
 }
