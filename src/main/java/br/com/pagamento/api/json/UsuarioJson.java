@@ -127,6 +127,11 @@ public class UsuarioJson {
 		}
 		return ResponseEntity.status(400).build();
 	}
+	
+	@GetMapping("/tokenPagamento/{token}")
+	public ResponseEntity<User> tokenPagamento(@PathVariable("token") String token){
+		return ResponseEntity.ok(serviceUsuario.tokenPagamento(token));
+	}
 
 	@PostMapping(value = "/save")
 	@ApiOperation(value="Criando um novo usuário")

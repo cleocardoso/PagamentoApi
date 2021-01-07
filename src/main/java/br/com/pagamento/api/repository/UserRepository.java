@@ -1,6 +1,8 @@
 package br.com.pagamento.api.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import br.com.pagamento.api.model.User;
@@ -12,4 +14,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
 	User findByNome(String username);
 
+	@Query(value = "select * from usuario u\n" + 
+			"inner join compras c on(u.id = c.usuario_id)\n" + 
+			"where c.token = :token", nativeQuery = true)
+	User tokenPagamento(@Param("token") String token);
 }

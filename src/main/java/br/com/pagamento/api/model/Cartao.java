@@ -1,6 +1,8 @@
 package br.com.pagamento.api.model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -10,7 +12,10 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
@@ -36,12 +41,12 @@ public class Cartao implements Serializable {
 
 	private int ano;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "id_compra")
-	private Pagamento compras;
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "cartao")
+	@JsonIgnore
+	private List<Pagamento> compras = new ArrayList<Pagamento>();
 
 	public Cartao(Long id_cartao, String nome, String numero, String cvv, int qtd_parcelas, double valor_parcelado,
-			int mes, int ano, Pagamento compras) {
+			int mes, int ano) {
 		super();
 		this.id_cartao = id_cartao;
 		this.nome = nome;
@@ -51,8 +56,6 @@ public class Cartao implements Serializable {
 		this.valor_parcelado = valor_parcelado;
 		this.mes = mes;
 		this.ano = ano;
-		this.compras = compras;
-
 	}
 
 	public int getMes() {
@@ -131,11 +134,11 @@ public class Cartao implements Serializable {
 		this.valor_parcelado = valor_parcelado;
 	}
 
-	public Pagamento getCompras() {
+	public List<Pagamento> getCompras() {
 		return compras;
 	}
-
-	public void setCompras(Pagamento compras) {
+	
+	public void setCompras(List<Pagamento> compras) {
 		this.compras = compras;
 	}
 

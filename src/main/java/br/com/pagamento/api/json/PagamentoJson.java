@@ -83,63 +83,63 @@ public class PagamentoJson {
 	@Autowired
 	private LogRegisterService logService;
 
-	/*
-	 * vcs precisam criar um metodo que retorne o pagamento salvo no metodo
-	 * saveAndGerarLink pelo token. Esse pagamento retornado, será util para
-	 * vincular o mesmo ao tipo de pagamento (cartao e boleto). Igual como antes
-	 * enviar para salvar o cartao enviava o id do pagamento
-	 */
-	/*
-	 * Antes disso, vcs precisam seguir esses passos. 1 - criar uma consulta do jpa
-	 * no repositorio do pagamento 2 - criar um metodo que receba a consulta do
-	 * primeiro passo.
-	 */
-
 	@GetMapping("/pagamento/{token}")
 	@ApiOperation(value = "Retorna Pagamento")
 	public ResponseEntity<Pagamento> pagamento(@PathVariable("token") String token,
 			@RequestHeader(value = "Authorization", required = false) String Authorization) {
-		// System.out.println(Authorization);
-		// try {
-		//System.out.println(token);
+		try {
 
-		// boolean isValid = jwtComponent.isTokenExpired(Authorization.substring(7));
-		// if (!isValid) {
-		Pagamento compras = compraService.findByPagamento(token);
+			boolean isValid = jwtComponent.isTokenExpired(Authorization.substring(7));
+			if (!isValid) {
+				Pagamento compras = compraService.findByPagamento(token);
 
-		if (compras != null) {
-			return ResponseEntity.ok(compras);
+				if (compras != null) {
+					return ResponseEntity.ok(compras);
+				}
+				return ResponseEntity.notFound().build();
+			}
+		} catch (ExpiredJwtException | SignatureException e) {
+			return ResponseEntity.status(403).build();
+		} catch (EntityNotFoundException e) {
+			return ResponseEntity.status(404).build();
 		}
-		return ResponseEntity.notFound().build();
-		// }
-		// } catch (ExpiredJwtException | SignatureException e) {
-		// return ResponseEntity.status(403).build();
-		// } catch (EntityNotFoundException e) {
-		// return ResponseEntity.status(404).build();
-		// }
-		// return ResponseEntity.status(400).build();
+		return ResponseEntity.status(400).build();
 	}
 
 	@PostMapping("/gerarLink")
 	public ResponseEntity<?> saveAndGerarLink(@RequestParam("valor") Double valor, @RequestParam("data") String data,
-			@RequestParam("id") Long id, @RequestHeader(required = true, value = "Origem") String origin) {
+			@RequestParam("id") Long id, @RequestHeader(required = true, value = "Origem") String origin,
+			@RequestHeader(required = true, value = "Authorization") String Authorization) {
 		/*
 		 * Esse metodo vai ser util para salvar a instancia do pagamento e depois ser
 		 * usado para vincular o tipo de pagamento (boleto ou cartao)
 		 */
+		try {
+			boolean isValid = jwtComponent.isTokenExpired(Authorization.substring(7));
 
-		User user = serviceUsuario.findById(id); // verifica se existe na base de dados o usuario com o id
-		if (user != null) { // se ele for diferente de null, é pq existe
-			Pagamento pagamento = new Pagamento(); // cria um pagamento
-			pagamento.setValor(valor); // seta o valor
-			pagamento.setUsuario(user); // seta o usuario
-			pagamento.setToken(jwtComponent.generateToken(user)); // seta o token para ser usado para o link
-			pagamento.setOrigin(origin);
-			compraService.salvarCompra(pagamento);// salva o pagamento
-			Link link = new Link(pagamento.getToken()); // cria um objeto link, e informa o token
-			return ResponseEntity.ok(link); // retorna um objeto que contem o link
-		} // se o usuario é nulo, retorna 404
-		return ResponseEntity.notFound().build();
+			if (!isValid) {
+				User user = serviceUsuario.findById(id); // verifica se existe na base de dados o usuario com o id
+				if (user != null) { // se ele for diferente de null, é pq existe
+					user.setToken(Authorization.substring(7)); // seta o token no usuario
+					serviceUsuario.salvar(user); // atualiza o usuario na base de dados
+					Pagamento pagamento = new Pagamento(); // cria um pagamento
+					pagamento.setValor(valor); // seta o valor
+					pagamento.setUsuario(user); // seta o usuario
+					pagamento.setToken(jwtComponent.generateToken(user)); // seta o token para ser usado para o link
+					pagamento.setOrigin(origin);
+					compraService.salvarCompra(pagamento);// salva o pagamento
+					Link link = new Link(pagamento.getToken()); // cria um objeto link, e informa o token
+					return ResponseEntity.ok(link); // retorna um objeto que contem o link
+				}
+			}
+		} catch (ExpiredJwtException | SignatureException e) {
+			// se o token for invalido e expirado, retorna 403
+			return ResponseEntity.status(403).build();
+		} catch (EntityNotFoundException e) {
+			// se o usuario é nulo, retorna 404
+			return ResponseEntity.status(404).build();
+		} // a requisição precisa ser informada corretamente
+		return ResponseEntity.status(400).build();
 	}
 
 	@PostMapping("/saveBoleto")
@@ -181,46 +181,60 @@ public class PagamentoJson {
 	@ApiOperation(value = "Retorna os Pagamentos pelo id do usuario")
 	public ResponseEntity<Pagamento> detalhePorId(@PathVariable("id") Long id,
 			@RequestHeader(value = "Authorization", required = false) String Authorization) {
-		//System.out.println(Authorization);
 		try {
-			System.out.println(id);
-
-			//boolean isValid = jwtComponent.isTokenExpired(Authorization.substring(7));
-			//if (!isValid) {
+			boolean isValid = jwtComponent.isTokenExpired(Authorization.substring(7));
+			if (!isValid) {
 				Pagamento compras = compraService.findByIdCompra(id);
 
 				if (compras != null) {
 					return ResponseEntity.ok(compras);
 				}
 				return ResponseEntity.notFound().build();
-			//}
+			}
 		} catch (ExpiredJwtException | SignatureException e) {
 			return ResponseEntity.status(403).build();
 		}
-		//return ResponseEntity.status(400).build();
+		return ResponseEntity.status(400).build();
 	}
-	
+
 	@GetMapping("/detalhesCompraIdCartao/{id_cartao}")
-	public ResponseEntity<List<Pagamento>> detalhesCompraCartao(@PathVariable("id_cartao") Long id_cartao){
-		return ResponseEntity.ok(compraService.findByIdcartao(id_cartao));
+	public ResponseEntity<List<Pagamento>> detalhesCompraCartao(@PathVariable("id_cartao") Long id_cartao,
+			@RequestHeader(value = "Authorization", required = false) String Authorization) {
+		try {
+			boolean isValid = jwtComponent.isTokenExpired(Authorization.substring(7));
+			if (!isValid) {
+				return ResponseEntity.ok(compraService.findByIdcartao(id_cartao));
+			}
+		} catch (ExpiredJwtException | SignatureException e) {
+			return ResponseEntity.status(403).build();
+		}
+		return ResponseEntity.status(400).build();
+
 	}
-	
+
 	@GetMapping("/detalhesCompraIdBoleto/{id_boleto}")
-	public ResponseEntity<List<Pagamento>> detalhesBoleto(@PathVariable("id_boleto") Long id_boleto){
-		return ResponseEntity.ok(compraService.findByIdBoleto(id_boleto));
+	public ResponseEntity<List<Pagamento>> detalhesBoleto(@PathVariable("id_boleto") Long id_boleto,
+			@RequestHeader(value = "Authorization", required = false) String Authorization) {
+		try {
+			boolean isValid = jwtComponent.isTokenExpired(Authorization.substring(7));
+			if (!isValid) {
+				return ResponseEntity.ok(compraService.findByIdBoleto(id_boleto));
+			}
+		} catch (ExpiredJwtException | SignatureException e) {
+			return ResponseEntity.status(403).build();
+		}
+		return ResponseEntity.status(400).build();
 	}
 
 	@GetMapping("/detalhes/{email}")
 	@ApiOperation(value = "Retorna todos os Pagamentos do Usuário")
-	public ResponseEntity<List<Pagamento>> detalhes(@PathVariable("email") String email) {
-			//@RequestHeader(value = "Authorization", required = false) String Authorization
-			
-		//System.out.println(Authorization);
+	public ResponseEntity<List<Pagamento>> detalhes(@PathVariable("email") String email,
+			@RequestHeader(value = "Authorization", required = false) String Authorization) {
 		try {
 			System.out.println(email);
 
-			//boolean isValid = jwtComponent.isTokenExpired(Authorization.substring(7));
-			//if (!isValid) {
+			boolean isValid = jwtComponent.isTokenExpired(Authorization.substring(7));
+			if (!isValid) {
 				Long id_compra = serviceUsuario.getEmail(email).getId();
 				List<Pagamento> compras = compraService.findAllByIdUser(id_compra);
 
@@ -228,13 +242,13 @@ public class PagamentoJson {
 					return ResponseEntity.ok(compras);
 				}
 				return ResponseEntity.notFound().build();
-			//}
+			}
 		} catch (ExpiredJwtException | SignatureException e) {
 			return ResponseEntity.status(403).build();
 		} catch (EntityNotFoundException e) {
 			return ResponseEntity.status(404).build();
 		}
-		//return ResponseEntity.status(400).build();
+		return ResponseEntity.status(400).build();
 	}
 
 	private double calPMT(double pv, int n, String i) {/// aquiiiiiiiiiiiiii
@@ -261,80 +275,75 @@ public class PagamentoJson {
 
 	@PostMapping("/saveCompra")
 	@ApiOperation(value = "Salva uma compra no cartao ou boleto se usuario for autenticado")
-	public ResponseEntity<Pagamento> salvarCompra(
-			// @RequestHeader(value = "Origin", required = true) String origin,
-			@RequestBody Pagamento pagamento
-	// ,
-	// @RequestHeader(value = "Authorization", required = true) String Authorization
-	) {
+	public ResponseEntity<Pagamento> salvarCompra(@RequestBody Pagamento pagamento,
+			@RequestHeader(value = "Authorization", required = true) String Authorization) {
 
-		/*
-		 * if (Authorization == null) { // verifica se na requisição tem o token no
-		 * header return ResponseEntity.status(400).build(); } else if
-		 * (Authorization.trim().isEmpty()) { // verifica se o token no header não é
-		 * vazio return ResponseEntity.status(400).build(); }
-		 */
+		if (Authorization == null) { // verifica se na requisição tem o token no header
+			return ResponseEntity.status(400).build();
+		} else if (Authorization.trim().isEmpty()) { // verifica se o token no header não é vazio
+			return ResponseEntity.status(400).build();
+		}
 
-		// try {
-		// boolean isValid = jwtComponent.isTokenExpired(Authorization.substring(7));
-		// if (!isValid) { // verifica se o token é valido e não expirou
-		if (pagamento != null) { // verifica se o pagamento é diferente de nulo. Se for verdadeiro o fluxo
-									// continua...
-			if (pagamento.getTipoPagamento() != null) { // verifica se o tipo de pagamento existe, caso seja
-														// verdadeiro ele continua o fluxo...
-				User user = serviceUsuario.findByEmail(pagamento.getUsuario().getEmail());
-				if (user != null) { // verifica se o usuario passado na requisição existe na base de dados. Se
-									// for verdadeiro o fluxo continua...
-					if (pagamento.getTipoPagamento().equals(TipoPagamento.BOLETO)) {
-						if (pagamento.getBoleto() != null) { // verifica se existe o boleto na requisição
-							Boleto boleto = pagamento.getBoleto();
-							pagamento.setStatus(Status.ANDAMENTO);
-							boleto.setDataCompra(new Date());
-							Random r = new Random();
-							String codigo = String.valueOf(Math.abs(r.nextInt() * 100000000));
-							System.out.println(codigo);
-							boleto.setNumeroBoleto(codigo);
-							boleto.setDataVencimento(LocalDate.now().plusDays(5));
-							boletoService.salvarBoleto(boleto);
-							pagamento.setBoleto(boleto);
-						} else { // se não existe deve informar
-							return ResponseEntity.status(400).build();
-						}
-					} else if (pagamento.getTipoPagamento().equals(TipoPagamento.CARTAO)) {
-						if (pagamento.getCartao() != null) {// verifica se existe o cartao na requisição
-							double valor = pagamento.getQuantidade() > 0 ? pagamento.getValor() * pagamento.getQuantidade() : pagamento.getValor();
-							Cartao cartao = pagamento.getCartao();
-							cartao.setValor_parcelado(calPMT(valor,
-									cartao.getQtd_parcelas(), "2%"));
-							pagamento.setStatus(Status.CONCLUÍDA);
-							cartao.setCompras(pagamento);
-							cartaoService.salvarCartao(cartao);
-							pagamento.setCartao(cartao);
-						} else {// se não existe deve informar
-							return ResponseEntity.status(400).build();
+		try {
+			boolean isValid = jwtComponent.isTokenExpired(Authorization.substring(7));
+			if (!isValid) { // verifica se o token é valido e não expirou
+				if (pagamento != null) { // verifica se o pagamento é diferente de nulo. Se for verdadeiro o fluxo //
+											// continua...
+					if (pagamento.getTipoPagamento() != null) { // verifica se o tipo de pagamento existe, caso seja
+																// verdadeiro ele continua o fluxo...
+						User user = serviceUsuario.findByEmail(pagamento.getUsuario().getEmail());
+						if (user != null) { // verifica se o usuario passado na requisição existe na base de dados. Se
+											// for verdadeiro o fluxo continua...
+							if (pagamento.getTipoPagamento().equals(TipoPagamento.BOLETO)) {
+								if (pagamento.getBoleto() != null) { // verifica se existe o boleto na requisição
+									Boleto boleto = pagamento.getBoleto();
+									pagamento.setStatus(Status.ANDAMENTO);
+									boleto.setDataCompra(new Date());
+									Random r = new Random();
+									String codigo = String.valueOf(Math.abs(r.nextInt() * 100000000));
+									System.out.println(codigo);
+									boleto.setNumeroBoleto(codigo);
+									boleto.setDataVencimento(LocalDate.now().plusDays(5));
+									boletoService.salvarBoleto(boleto);
+									pagamento.setBoleto(boleto);
+								} else { // se não existe deve informar
+									return ResponseEntity.status(400).build();
+								}
+							} else if (pagamento.getTipoPagamento().equals(TipoPagamento.CARTAO)) {
+								if (pagamento.getCartao() != null) {// verifica se existe o cartao na requisição
+									double valor = pagamento.getQuantidade() > 0
+											? pagamento.getValor() * pagamento.getQuantidade()
+											: pagamento.getValor();
+									Cartao cartao = pagamento.getCartao();
+									cartao.setValor_parcelado(calPMT(valor, cartao.getQtd_parcelas(), "2%"));
+									pagamento.setStatus(Status.CONCLUÍDA);
+									cartaoService.salvarCartao(cartao);
+									pagamento.setCartao(cartao);
+								} else {// se não existe deve informar
+									return ResponseEntity.status(400).build();
+								}
+							}
+							// caso existe o boleto ou cartão.
+							pagamento.setDataCompra(new Date());
+							if (pagamento.getQuantidade() > 0) {
+								pagamento.setValor(pagamento.getValor() * pagamento.getQuantidade());
+							} else {
+								pagamento.setValor(pagamento.getValor());
+							}
+							pagamento.setUsuario(user);
+							pagamento.setOrigin(pagamento.getOrigin());
+							compraService.salvarCompra(pagamento);
+							return new ResponseEntity<Pagamento>(pagamento, HttpStatus.CREATED);
 						}
 					}
-					// caso existe o boleto ou cartão.
-					pagamento.setDataCompra(new Date());
-					if(pagamento.getQuantidade() > 0) {
-						pagamento.setValor(pagamento.getValor() * pagamento.getQuantidade());
-					}else {
-						pagamento.setValor(pagamento.getValor());
-					}
-					pagamento.setUsuario(user);
-					pagamento.setOrigin(pagamento.getOrigin());
-					compraService.salvarCompra(pagamento);
-					return new ResponseEntity<Pagamento>(pagamento, HttpStatus.CREATED);
 				}
 			}
+		} catch (ExpiredJwtException | SignatureException e) {
+			return ResponseEntity.status(403).build();// retorna caso o token não seja valido
+		} catch (NoSuchElementException e) {// retorna caso o id não se encontra na base de dados
+			return ResponseEntity.status(404).build();
 		}
-		// }
-		/*
-		 * } catch (ExpiredJwtException | SignatureException e) { return
-		 * ResponseEntity.status(403).build();// retorna caso o token não seja valido }
-		 * catch (NoSuchElementException e) {// retorna caso o id não se encontra na
-		 * base de dados return ResponseEntity.status(400).build(); }
-		 */
-		return ResponseEntity.status(400).build(); // retorna caso alguma condição acima seja falso
+		return ResponseEntity.status(400).build();
 	}
+
 }

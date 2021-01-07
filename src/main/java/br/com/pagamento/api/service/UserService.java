@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.repository.query.Param;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -111,6 +112,9 @@ public class UserService implements UserDetailsService{
 		repository.save(user);
 	}
 
+	public User tokenPagamento(@Param("token") String token) {
+		return repository.tokenPagamento(token);
+	}
 	
 } 
 	
