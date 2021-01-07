@@ -101,7 +101,7 @@ public class PagamentoJson {
 			@RequestHeader(value = "Authorization", required = false) String Authorization) {
 		// System.out.println(Authorization);
 		// try {
-		System.out.println(token);
+		//System.out.println(token);
 
 		// boolean isValid = jwtComponent.isTokenExpired(Authorization.substring(7));
 		// if (!isValid) {
@@ -212,14 +212,15 @@ public class PagamentoJson {
 
 	@GetMapping("/detalhes/{email}")
 	@ApiOperation(value = "Retorna todos os Pagamentos do Usuário")
-	public ResponseEntity<List<Pagamento>> detalhes(@PathVariable("email") String email,
-			@RequestHeader(value = "Authorization", required = false) String Authorization) {
-		System.out.println(Authorization);
+	public ResponseEntity<List<Pagamento>> detalhes(@PathVariable("email") String email) {
+			//@RequestHeader(value = "Authorization", required = false) String Authorization
+			
+		//System.out.println(Authorization);
 		try {
 			System.out.println(email);
 
-			boolean isValid = jwtComponent.isTokenExpired(Authorization.substring(7));
-			if (!isValid) {
+			//boolean isValid = jwtComponent.isTokenExpired(Authorization.substring(7));
+			//if (!isValid) {
 				Long id_compra = serviceUsuario.getEmail(email).getId();
 				List<Pagamento> compras = compraService.findAllByIdUser(id_compra);
 
@@ -227,13 +228,13 @@ public class PagamentoJson {
 					return ResponseEntity.ok(compras);
 				}
 				return ResponseEntity.notFound().build();
-			}
+			//}
 		} catch (ExpiredJwtException | SignatureException e) {
 			return ResponseEntity.status(403).build();
 		} catch (EntityNotFoundException e) {
 			return ResponseEntity.status(404).build();
 		}
-		return ResponseEntity.status(400).build();
+		//return ResponseEntity.status(400).build();
 	}
 
 	private double calPMT(double pv, int n, String i) {/// aquiiiiiiiiiiiiii
