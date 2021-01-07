@@ -57,7 +57,7 @@ class Link {
 
 	public Link(String token) {
 		//this.link = "http://localhost:8080/compras/comprar/" + token;
-		this.link = "https://projeto-pag-web.herokuapp.com" + token;
+		this.link = "https://projeto-pag-web.herokuapp.com/compras/comprar/" + token;
 	}
 }
 
