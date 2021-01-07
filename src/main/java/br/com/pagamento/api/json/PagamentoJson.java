@@ -204,6 +204,11 @@ public class PagamentoJson {
 	public ResponseEntity<List<Pagamento>> detalhesCompraCartao(@PathVariable("id_cartao") Long id_cartao){
 		return ResponseEntity.ok(compraService.findByIdcartao(id_cartao));
 	}
+	
+	@GetMapping("/detalhesCompraIdBoleto/{id_boleto}")
+	public ResponseEntity<List<Pagamento>> detalhesBoleto(@PathVariable("id_boleto") Long id_boleto){
+		return ResponseEntity.ok(compraService.findByIdBoleto(id_boleto));
+	}
 
 	@GetMapping("/detalhes/{email}")
 	@ApiOperation(value = "Retorna todos os Pagamentos do Usuário")
@@ -290,6 +295,7 @@ public class PagamentoJson {
 							boleto.setNumeroBoleto(codigo);
 							boleto.setDataVencimento(LocalDate.now().plusDays(5));
 							boletoService.salvarBoleto(boleto);
+							pagamento.setBoleto(boleto);
 						} else { // se não existe deve informar
 							return ResponseEntity.status(400).build();
 						}
@@ -300,6 +306,7 @@ public class PagamentoJson {
 							cartao.setValor_parcelado(calPMT(valor,
 									cartao.getQtd_parcelas(), "2%"));
 							pagamento.setStatus(Status.CONCLUÍDA);
+							cartao.setCompras(pagamento);
 							cartaoService.salvarCartao(cartao);
 							pagamento.setCartao(cartao);
 						} else {// se não existe deve informar
