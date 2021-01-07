@@ -63,7 +63,7 @@ public class SwaggerConfig {
     public Docket Api() {
         return new Docket(DocumentationType.SWAGGER_2)
                 .select()
-                .apis(RequestHandlerSelectors.basePackage("com.Teste.Aplication"))
+                .apis(RequestHandlerSelectors.basePackage("br.com.pagamento.api"))
                 //.paths(regex("/api/compras.*"))
                 //.paths(regex("/api/usuarios.*"))
                 .paths(PathSelectors.any())
