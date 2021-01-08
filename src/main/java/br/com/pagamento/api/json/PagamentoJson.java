@@ -263,7 +263,8 @@ public class PagamentoJson {
 		double resultThree = resultOne / resultTwo;
 		// DecimalFormat decimalFormat = new DecimalFormat("#,##0.00");
 		// decimalFormat.setRoundingMode(RoundingMode.DOWN);
-		BigDecimal bigDecimal = new BigDecimal(pv / resultThree, MathContext.DECIMAL32).valueOf(2.0);
+		BigDecimal bigDecimal = new BigDecimal(pv / resultThree, MathContext.DECIMAL32).setScale(2, BigDecimal.ROUND_HALF_EVEN);;
+
 
 		// String valor[]=decimalFormat.format(pv/resultThree).split(",");
 
