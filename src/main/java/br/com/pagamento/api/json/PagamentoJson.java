@@ -120,7 +120,7 @@ public class PagamentoJson {
 			boolean isValid = jwtComponent.isTokenExpired(Authorization.substring(7));
 			System.out.println(Authorization.substring(7));
 			if (!isValid) {
-				User user = serviceUsuario.tokenId(id,Authorization.substring(8)); // verifica se existe na base de dados o usuario com o id
+				User user = serviceUsuario.tokenId(id,Authorization.substring(7)); // verifica se existe na base de dados o usuario com o id
 				
 				if (user != null) { // se ele for diferente de null, é pq existe
 					user.setToken(Authorization.substring(7)); // seta o token no usuario
