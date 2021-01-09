@@ -43,7 +43,7 @@ public class Pagamento implements Serializable {
 
 	private double valor;
 
-	private int quantidade;
+	private int quantidade=1;
 
 	@JsonFormat(pattern = "dd/MM/yyyy")
 	@Temporal(TemporalType.DATE)
