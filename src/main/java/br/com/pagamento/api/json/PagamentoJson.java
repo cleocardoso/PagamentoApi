@@ -118,9 +118,10 @@ public class PagamentoJson {
 		 */
 		try {
 			boolean isValid = jwtComponent.isTokenExpired(Authorization.substring(7));
-
+			System.out.println(Authorization.substring(7));
 			if (!isValid) {
-				User user = serviceUsuario.findById(id); // verifica se existe na base de dados o usuario com o id
+				User user = serviceUsuario.tokenId(id,Authorization.substring(8)); // verifica se existe na base de dados o usuario com o id
+				
 				if (user != null) { // se ele for diferente de null, é pq existe
 					user.setToken(Authorization.substring(7)); // seta o token no usuario
 					serviceUsuario.salvar(user); // atualiza o usuario na base de dados
@@ -132,6 +133,9 @@ public class PagamentoJson {
 					compraService.salvarCompra(pagamento);// salva o pagamento
 					Link link = new Link(pagamento.getToken()); // cria um objeto link, e informa o token
 					return ResponseEntity.ok(link); // retorna um objeto que contem o link
+				}
+				else {
+					return ResponseEntity.status(404).build();
 				}
 			}
 		} catch (ExpiredJwtException | SignatureException e) {

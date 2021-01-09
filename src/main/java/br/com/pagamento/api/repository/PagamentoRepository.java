@@ -12,7 +12,7 @@ import br.com.pagamento.api.model.Pagamento;
 public interface PagamentoRepository extends JpaRepository<Pagamento, Long> {
 
 	@Query(value = "select * from compras c\n" + "inner join usuario u on(c.usuario_id = u.id)\n"
-			+ "where u.id = :id", nativeQuery = true)
+			+ "where u.id = :id && c.status is not null", nativeQuery = true)
 	public List<Pagamento> findAllByIdUser(@Param("id") Long id);
 
 	Pagamento findByIdCompra(Long id);

@@ -115,6 +115,10 @@ public class UserService implements UserDetailsService{
 	public User tokenPagamento(@Param("token") String token) {
 		return repository.tokenPagamento(token);
 	}
+	public User tokenId(@Param("id") Long id,@Param("token") String token) {
+		return repository.tokenId(token, id);
+		
+	}
 	
 } 
 	
