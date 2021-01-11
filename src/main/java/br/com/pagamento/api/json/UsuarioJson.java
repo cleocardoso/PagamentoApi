@@ -142,7 +142,7 @@ public class UsuarioJson {
 	
 	@PostMapping(value = "/trocarSenha")
 	@ApiOperation(value="Enviar senha para email")
-	public ResponseEntity <User> trocarSenha(@RequestParam("email") String email) {
+	public ModelAndView trocarSenha(@RequestParam("email") String email) {
 			
 		User user2 = serviceUsuario.getEmail(email);
 		ModelAndView view = new ModelAndView("login");
@@ -164,9 +164,9 @@ public class UsuarioJson {
 			
 			
 		}
-		return ResponseEntity.ok(user2);
+		//return ResponseEntity.ok(user2);
 		//return ResponseEntity.status(400).build();
-		//return view;
+		return view;
 	}
 	
 	@GetMapping("/tokenPagamento/{token}")
