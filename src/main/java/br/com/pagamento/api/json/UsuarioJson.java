@@ -142,14 +142,14 @@ public class UsuarioJson {
 	
 	@PostMapping(value = "/trocarSenha")
 	@ApiOperation(value="Enviar senha para email")
-	public ModelAndView trocarSenha(@RequestParam("email") String email) {
+	public ResponseEntity <User> trocarSenha(@RequestParam("email") String email) {
 			
 		User user2 = serviceUsuario.getEmail(email);
 		ModelAndView view = new ModelAndView("login");
 		if(user2 == null) {
 			
 				view.addObject("error", "Email não está cadastrado no sistema!");
-				//return ResponseEntity.status(404).build();
+				return ResponseEntity.status(404).build();
 		}else {
 			Random r = new Random();
 			String novaSenhaGerada = String.valueOf(Math.abs(r.nextInt()));
@@ -164,9 +164,10 @@ public class UsuarioJson {
 			
 			
 		}
-		//return ResponseEntity.ok(user2);
-		//return ResponseEntity.status(400).build();
-		return view;
+		
+		return ResponseEntity.ok(user2);
+		
+		
 	}
 	
 	@GetMapping("/tokenPagamento/{token}")
