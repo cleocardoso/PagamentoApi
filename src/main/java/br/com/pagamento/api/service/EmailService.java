@@ -22,7 +22,7 @@ public class EmailService {
 	public void sendNovaSenhaEmail(Email email, String novaSenha) {
 		try {
 			User usuario = serviceUsuario.getEmail(email.getTo());
-			email.setFrom("suporte.projeto.siap@gmail.com");
+			email.setFrom("suporte.livraria123@gmail.com");
 			email.getMap().put("name", usuario.getNome());
 			email.setSubject("Olá " + usuario.getNome() + " Confira sua nova senha!");
 			
